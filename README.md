@@ -1,14 +1,21 @@
 # CashCards LIVE Dashboard
 
-CashCards LIVE Dashboard is a single-file desktop app (Python + Tkinter) that pulls TikTok Shop LIVE performance data and turns it into a "dead zone" dashboard. A dead zone is a stretch of a LIVE stream in which a chosen metric (items sold, orders, GMV or product clicks) stayed at zero for at least a set number of minutes.
+CashCards LIVE Dashboard is a single-file desktop app (Python + Tkinter) that pulls TikTok Shop LIVE performance data and turns it into a "dead zone" dashboard. A dead zone is a stretch of a LIVE stream in which a chosen metric (items sold, orders, GMV or product clicks) stayed at zero for at least a set number of minutes. It is meant for shop staff who review LIVE streams and want to see when sales stalled.
 
 The app exports per-session and per-minute LIVE data from the TikTok Shop Open API to CSV files. It then builds a self-contained HTML dashboard from the minute-level CSVs you pick and opens it in your browser. The dashboard works offline: its charting and CSV libraries and the data itself are embedded in the HTML file.
+
+## Quick start
+
+1. Create a plain-text `env.txt` containing `TTS_APP_KEY=...` and `TTS_APP_SECRET=...` (see [Configuration](#configuration)).
+2. Run the app (prebuilt `.exe` / `.app`, or `python3 "CCU LIVE Dashboard.py"`). On Windows or from source, put `env.txt` next to the app; on macOS, use **Choose .env…**.
+3. Click **Start**, answer **Yes** to export, sign in to TikTok Shop once, then pick the new `live_minutes_*.csv`.
+4. The dashboard opens in your browser and is saved in `dashboards/`.
 
 ## Features
 
 - **Guided flow.** Press **Start**, choose whether to export fresh data, pick the CSV files, and the dashboard opens.
 - **TikTok Shop export**
-  - Pulls LIVE sessions for both `OFFICIAL_ACCOUNTS` and `MARKETING_ACCOUNTS` over the last 1–90 days (default 7).
+  - Pulls LIVE sessions for both `OFFICIAL_ACCOUNTS` and `MARKETING_ACCOUNTS` from 1–90 days ago through today (default 7).
   - Fetches per-minute performance for each session, 6 sessions in parallel.
   - Retries with backoff on HTTP 429/5xx and on API rate-limit messages.
   - Caches minute data for LIVEs more than 2 days old, so repeat exports are faster.
@@ -17,7 +24,7 @@ The app exports per-session and per-minute LIVE data from the TikTok Shop Open A
 - **Forgiving settings file.** Accepts `.env`, `env.txt` and similar names. Rich-text files saved by TextEdit (`.rtf` / `.rtfd`) are converted to a plain `env.txt`.
 - **Dashboard (single HTML file)**
   - Metric picker: GMV, items sold, orders, customers, viewers, views, product clicks, new followers, likes, comments and others.
-  - Dead-zone rule: no items sold, orders, GMV or product clicks for at least N minutes.
+  - Dead-zone rule: no items sold, orders, GMV or product clicks for at least N minutes (default 15, range 2–120).
   - Filters: date range with presets (All, last 24h, 3 days, 7 days), time of day, day of week and account. You can keep or trim zero-viewer minutes at the start and end of a stream.
   - Views: KPIs, an over-time chart (total or per stream hour, by hour, day or week), insights, tables by account and host, a day-of-week by hour heatmap, a by-hour-of-day chart, a "minutes into the stream" chart, a dead-zone table (downloadable as CSV), a session list and a zoomable per-session drill-down.
   - Light/dark theme toggle and print / save as PDF.
@@ -25,7 +32,7 @@ The app exports per-session and per-minute LIVE data from the TikTok Shop Open A
 
 ## Requirements
 
-- **Prebuilt app:** Windows (`CashCards LIVE.exe`) or macOS (`CashCards LIVE.app.zip`). No Python needed.
+- **Prebuilt app:** Windows (`CashCards LIVE.exe`) or macOS (`CashCards LIVE.app.zip`). No Python needed. The included Mac build is for Apple Silicon (arm64); Intel Macs need their own build (see [Building the app](#building-the-app)).
 - **From source:**
   - Python 3 with Tkinter. The python.org installers include Tkinter.
   - Standard library only, so there is nothing to `pip install`. `certifi` is used if present (see [Troubleshooting](#troubleshooting)).
@@ -37,13 +44,13 @@ The app exports per-session and per-minute LIVE data from the TikTok Shop Open A
 
 ### Prebuilt app
 
-1. Put your settings file (see [Configuration](#configuration)) in the same folder as the app.
+1. **Windows:** put your settings file (see [Configuration](#configuration)) in the same folder as the `.exe`. **macOS:** the app looks inside its own bundle, not next to the `.app`, so plan to use **Choose .env…** (step 4).
 2. **Windows:** double-click `CashCards LIVE.exe`. On first launch you may see "Windows protected your PC"; choose **More info → Run anyway**.
 3. **macOS:**
    1. Unzip `CashCards LIVE.app.zip`.
    2. On first launch, right-click the app and choose **Open → Open**. You can also use **System Settings → Privacy & Security → Open Anyway**.
    3. The Mac build only runs on the chip type it was built on (Apple Silicon or Intel).
-4. If the app doesn't find the settings file, click **Choose .env…** and select it. See the macOS note under [Troubleshooting](#troubleshooting).
+4. If the app doesn't find the settings file, click **Choose .env…** and select it. The choice is not remembered, so repeat this each time you open the app. See the macOS note under [Troubleshooting](#troubleshooting).
 
 ### From source
 
@@ -64,7 +71,7 @@ On Windows you can also rename the file to `.pyw` and double-click it to run wit
 ### Using the app
 
 1. Click **Start**. If no settings file was found, you are asked to choose one.
-2. Answer **Yes** to export fresh data, then enter how many days back to export (1–90). TikTok data usually lags 1–2 days. Answer **No** to skip straight to choosing existing CSVs.
+2. Answer **Yes** to export fresh data, then enter how many days back to export (1–90). The range runs from that many days ago through today. TikTok data usually lags 1–2 days. Answer **No** to skip straight to choosing existing CSVs.
 3. On the first export, the app asks to connect TikTok Shop. Your browser opens the authorization page; sign in and click **Authorize**. The app waits up to 4 minutes for the callback. If the callback doesn't arrive, paste the code, or the whole URL of the page you landed on.
 4. Choose one or more `live_minutes_*.csv` files. Files that are not minute files are skipped.
 5. The dashboard is written to `dashboards/` and opened in your browser.
@@ -211,9 +218,11 @@ If verification still fails on a Mac, run **Install Certificates.command** in `/
 | "Saved login has expired" / "Couldn't refresh login" | Authorize again when prompted. The new tokens overwrite the old ones in the settings file. |
 | "No shops are authorized for this login" | Authorize the app for the shop in TikTok Shop. |
 | A session is "skipped … Usually still live or not processed yet" | The minute data isn't available yet. Export again later. |
+| A recent LIVE shows incomplete or stale minute data after re-exporting | Delete its `exports/.cache/<live_id>.json` file (or the whole `.cache` folder) and export again. |
 | "None of the chosen files are live_minutes CSVs" | Choose `live_minutes_*.csv` files, not `live_sessions_*.csv`. |
 | Windows "protected your PC" / macOS "can't be opened" | The app isn't code-signed. Use **More info → Run anyway** on Windows, or **right-click → Open** on macOS. |
 | macOS build can't find the settings file, or files end up somewhere unexpected | In a packaged `.app`, the app folder resolves to the executable inside the bundle (`CashCards LIVE.app/Contents/MacOS`), not the folder containing the `.app`. Use **Choose .env…**, and use **Open folder** to see where `exports/` and `dashboards/` are written. |
+| macOS export fails with a read-only or permission error | macOS may be running the app from a temporary read-only location. Move the `.app` to another folder (for example Applications) with Finder, then open it again. |
 
 Unexpected startup errors are shown in an error dialog, or printed to the console if Tk itself can't load.
 
