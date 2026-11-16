@@ -6,8 +6,10 @@ The app exports per-session and per-minute LIVE data from the TikTok Shop Open A
 
 ## Quick start
 
+Prebuilt apps aren't included right now; build one from source (see [Building the app](#building-the-app)) or run the script with Python.
+
 1. Create a plain-text `env.txt` containing `TTS_APP_KEY=...` and `TTS_APP_SECRET=...` (see [Configuration](#configuration)).
-2. Run the app (prebuilt `.exe` / `.app`, or `python3 "CCU LIVE Dashboard.py"`). Put `env.txt` in the same folder as the `.exe`, the `.app`, or the `.py` file. (The included Mac build predates this; with it, use **Choose .env…**.)
+2. Run the app with `python3 "CCU LIVE Dashboard.py"`, or build a `.exe` / `.app` yourself (see [Building the app](#building-the-app)). Put `env.txt` in the same folder as the `.py` file, the `.exe` or the `.app`.
 3. Click **Start**, answer **Yes** to export, sign in to TikTok Shop once, then pick the new `live_minutes_*.csv`.
 4. The dashboard opens in your browser and is saved in `dashboards/`.
 
@@ -32,7 +34,7 @@ The app exports per-session and per-minute LIVE data from the TikTok Shop Open A
 
 ## Requirements
 
-- **Prebuilt app:** Windows (`CashCards LIVE.exe`) or macOS (`CashCards LIVE.app.zip`). No Python needed. The included Mac build is for Apple Silicon (arm64); Intel Macs need their own build (see [Building the app](#building-the-app)).
+- **Built app:** a Windows `.exe` or macOS `.app` you build yourself (see [Building the app](#building-the-app)). No Python needed on the machine that runs it. A Mac build runs only on the chip type it was built on (Apple Silicon or Intel).
 - **From source:**
   - Python 3 with Tkinter. The python.org installers include Tkinter.
   - Standard library only, so there is nothing to `pip install`. `certifi` is used if present (see [Troubleshooting](#troubleshooting)).
@@ -42,12 +44,12 @@ The app exports per-session and per-minute LIVE data from the TikTok Shop Open A
 
 ## How to run
 
-### Prebuilt app
+### Built app
 
-1. **Windows:** put your settings file (see [Configuration](#configuration)) in the same folder as the `.exe`. **macOS:** put it in the same folder as the `.app`; `exports/`, `dashboards/` and `tts_tokens.json` are written there too. The included `CashCards LIVE.app.zip` was built before this was fixed and looks inside its own bundle instead, so with that build use **Choose .env…** (step 4) until it is rebuilt from the current source.
+1. **Windows:** put your settings file (see [Configuration](#configuration)) in the same folder as the `.exe`. **macOS:** put it in the same folder as the `.app`; `exports/`, `dashboards/` and `tts_tokens.json` are written there too.
 2. **Windows:** double-click `CashCards LIVE.exe`. On first launch you may see "Windows protected your PC"; choose **More info → Run anyway**.
 3. **macOS:**
-   1. Unzip `CashCards LIVE.app.zip`.
+   1. If the `.app` was shared as a zip, unzip it.
    2. On first launch, right-click the app and choose **Open → Open**. You can also use **System Settings → Privacy & Security → Open Anyway**.
    3. The Mac build only runs on the chip type it was built on (Apple Silicon or Intel).
 4. If the app doesn't find the settings file, click **Choose .env…** and select it. The choice is not remembered, so repeat this each time you open the app. See the macOS note under [Troubleshooting](#troubleshooting).
@@ -221,7 +223,7 @@ If verification still fails on a Mac, run **Install Certificates.command** in `/
 | A recent LIVE shows incomplete or stale minute data after re-exporting | Delete its `exports/.cache/<live_id>.json` file (or the whole `.cache` folder) and export again. |
 | "None of the chosen files are live_minutes CSVs" | Choose `live_minutes_*.csv` files, not `live_sessions_*.csv`. |
 | Windows "protected your PC" / macOS "can't be opened" | The app isn't code-signed. Use **More info → Run anyway** on Windows, or **right-click → Open** on macOS. |
-| macOS build can't find the settings file, or files end up somewhere unexpected | Builds from the current source use the folder containing the `.app`. Older builds (including the included `CashCards LIVE.app.zip` until it is rebuilt) use the folder inside the bundle (`CashCards LIVE.app/Contents/MacOS`); with those, use **Choose .env…**, or rebuild. **Open folder** shows where `exports/` and `dashboards/` are written. |
+| macOS build can't find the settings file, or files end up somewhere unexpected | Builds from the current source use the folder containing the `.app`. Older builds use the folder inside the bundle (`CashCards LIVE.app/Contents/MacOS`); with those, use **Choose .env…**, or rebuild. **Open folder** shows where `exports/` and `dashboards/` are written. |
 | macOS export fails with a read-only or permission error | macOS may be running the app from a temporary read-only location. Move the `.app` to another folder (for example Applications) with Finder, then open it again. |
 
 Unexpected startup errors are shown in an error dialog, or printed to the console if Tk itself can't load.
@@ -231,8 +233,6 @@ Unexpected startup errors are shown in an error dialog, or printed to the consol
 ```
 .
 ├── CCU LIVE Dashboard.py     # The entire app: settings, OAuth, API client, export, dashboard builder, Tk GUI
-├── CashCards LIVE.exe        # Prebuilt Windows app (PyInstaller --onefile)
-├── CashCards LIVE.app.zip    # Prebuilt macOS app (zipped .app)
 └── README.md
 ```
 
