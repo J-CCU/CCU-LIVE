@@ -17,6 +17,8 @@ from pathlib import Path
 
 APP_NAME = "CashCards LIVE Dashboard"
 HERE = Path(sys.argv[0] if getattr(sys, "frozen", False) else __file__).resolve().parent
+if getattr(sys, "frozen", False) and HERE.name == "MacOS" and HERE.parent.name == "Contents" and HERE.parent.parent.suffix == ".app":
+    HERE = HERE.parent.parent.parent              # macOS .app: use the folder that contains the .app
 EXPORTS = HERE / "exports"
 DASHBOARDS = HERE / "dashboards"
 TOKEN_FILE = HERE / "tts_tokens.json"
@@ -358,6 +360,17 @@ def ts_local(v):
         return v
 
 
+def live_day(v):
+    """YYYY-MM-DD (local) for an epoch-seconds/ms or ISO start_time; '' if unknown."""
+    if v is None or v == "":
+        return ""
+    try:
+        n = int(v)
+        return date.fromtimestamp(n / 1000 if n > 10**11 else n).isoformat()
+    except (TypeError, ValueError, OverflowError, OSError):
+        return str(v)[:10]
+
+
 def run_export(key, secret, start, end, log, auth_code=None, currency="USD"):
     """Returns (sessions_csv, minutes_csv)."""
     c = Client(key, secret, get_access_token(key, secret, auth_code))
@@ -392,8 +405,9 @@ def run_export(key, secret, start, end, log, auth_code=None, currency="USD"):
         cf = cache_dir / f"{live_id}.json"
         if cf.exists():
             try:
+                cached = json.loads(cf.read_text())
                 with lock: hits[0] += 1
-                return json.loads(cf.read_text()), None, True
+                return cached, None, True
             except ValueError:
                 pass
         intervals, overall, token = [], {}, None
@@ -410,7 +424,7 @@ def run_export(key, secret, start, end, log, auth_code=None, currency="USD"):
         except AppError as e:
             return None, str(e), False
         data = {"overall": overall, "intervals": intervals}
-        if intervals and str(s.get("start_time", ""))[:10] and str(s.get("start_time", ""))[:10] < cutoff:
+        if intervals and live_day(s.get("start_time")) and live_day(s.get("start_time")) < cutoff:
             cf.write_text(json.dumps(data))
         return data, None, False
 

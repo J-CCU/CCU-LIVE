@@ -7,7 +7,7 @@ The app exports per-session and per-minute LIVE data from the TikTok Shop Open A
 ## Quick start
 
 1. Create a plain-text `env.txt` containing `TTS_APP_KEY=...` and `TTS_APP_SECRET=...` (see [Configuration](#configuration)).
-2. Run the app (prebuilt `.exe` / `.app`, or `python3 "CCU LIVE Dashboard.py"`). On Windows or from source, put `env.txt` next to the app; on macOS, use **Choose .env…**.
+2. Run the app (prebuilt `.exe` / `.app`, or `python3 "CCU LIVE Dashboard.py"`). Put `env.txt` in the same folder as the `.exe`, the `.app`, or the `.py` file. (The included Mac build predates this; with it, use **Choose .env…**.)
 3. Click **Start**, answer **Yes** to export, sign in to TikTok Shop once, then pick the new `live_minutes_*.csv`.
 4. The dashboard opens in your browser and is saved in `dashboards/`.
 
@@ -44,7 +44,7 @@ The app exports per-session and per-minute LIVE data from the TikTok Shop Open A
 
 ### Prebuilt app
 
-1. **Windows:** put your settings file (see [Configuration](#configuration)) in the same folder as the `.exe`. **macOS:** the app looks inside its own bundle, not next to the `.app`, so plan to use **Choose .env…** (step 4).
+1. **Windows:** put your settings file (see [Configuration](#configuration)) in the same folder as the `.exe`. **macOS:** put it in the same folder as the `.app`; `exports/`, `dashboards/` and `tts_tokens.json` are written there too. The included `CashCards LIVE.app.zip` was built before this was fixed and looks inside its own bundle instead, so with that build use **Choose .env…** (step 4) until it is rebuilt from the current source.
 2. **Windows:** double-click `CashCards LIVE.exe`. On first launch you may see "Windows protected your PC"; choose **More info → Run anyway**.
 3. **macOS:**
    1. Unzip `CashCards LIVE.app.zip`.
@@ -221,7 +221,7 @@ If verification still fails on a Mac, run **Install Certificates.command** in `/
 | A recent LIVE shows incomplete or stale minute data after re-exporting | Delete its `exports/.cache/<live_id>.json` file (or the whole `.cache` folder) and export again. |
 | "None of the chosen files are live_minutes CSVs" | Choose `live_minutes_*.csv` files, not `live_sessions_*.csv`. |
 | Windows "protected your PC" / macOS "can't be opened" | The app isn't code-signed. Use **More info → Run anyway** on Windows, or **right-click → Open** on macOS. |
-| macOS build can't find the settings file, or files end up somewhere unexpected | In a packaged `.app`, the app folder resolves to the executable inside the bundle (`CashCards LIVE.app/Contents/MacOS`), not the folder containing the `.app`. Use **Choose .env…**, and use **Open folder** to see where `exports/` and `dashboards/` are written. |
+| macOS build can't find the settings file, or files end up somewhere unexpected | Builds from the current source use the folder containing the `.app`. Older builds (including the included `CashCards LIVE.app.zip` until it is rebuilt) use the folder inside the bundle (`CashCards LIVE.app/Contents/MacOS`); with those, use **Choose .env…**, or rebuild. **Open folder** shows where `exports/` and `dashboards/` are written. |
 | macOS export fails with a read-only or permission error | macOS may be running the app from a temporary read-only location. Move the `.app` to another folder (for example Applications) with Finder, then open it again. |
 
 Unexpected startup errors are shown in an error dialog, or printed to the console if Tk itself can't load.
